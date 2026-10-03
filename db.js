@@ -25,10 +25,3 @@ pool.query("SELECT NOW()")
 
 
 export default pool;
-/*
-user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database:process.env.DATABASE,
-    password: process.env.DB_PASS,
-    port: process.env.PORT
-    */
