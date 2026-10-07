@@ -1,5 +1,21 @@
-import pool from "../db.js" 
+import pool from "../db.js";
 
+
+export const IsUserExist = async (id)=>{
+ 
+  const data = await pool.query("select * from applications where applications.app_id = $1",[id]);
+
+  return data;
+}
+
+
+
+
+export const  IscompanyExist = async (id)=>{
+  const data = 
+    await pool.query("select * from companies where companies.company_id = $1",[id]);
+  return data;
+}
 
 export const getSearchUser = async (search)=>{ 
   
@@ -26,7 +42,7 @@ export const getAllUsers = async ()=>{
 
 
 export const createUser = async (body,company_id)=>{ 
-  
+    
   const data = await pool.query("insert into applications(role,status,applied_date,notes,company_id) values($1, $2, $3, $4,$5) returning app_id",[body.role, body.status,body.applied_date,body.notes,company_id]);
 
   return data;
