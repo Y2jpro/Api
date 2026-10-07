@@ -43,22 +43,36 @@ try{
 
 
 export const createUser = async (req,res)=>{ 
-    let IsCompanyExist = null;
     let body = req.body; 
-let company_id = body.company_id;
-  const result = validation.applicationSchema.safeParse(body,company_id);
-  console.log(result);
+let company_id = body.company_id; 
+let IsCompanyExist = null;
+ const result = validation.applicationSchema.safeParse(body,company_id);
+  console.log(result); 
+
+if(!result.success){
+   return res.json({
+      message : "input Data is invalid !!"
+   });
+ }
 
 try{ 
-  IsCompanyExist = await applicationService.IscompanyExist(company_id);
+   IsCompanyExist = await applicationService.IscompanyExist(company_id); 
   }catch(err){
      return res.json({
-     message :"company id not exist ,please enter valid id (createUser)",
+     message :"something went wrong on our end while checking",
        errror : err.message
-     });
+   });
+}  
+
+if(IsCompanyExist.rowCount == 0){
+  return res.json({
+      message : "company id is not exist!"
+  });
 }
-  if(IsCompanyExist.rowCount !=0 && result.success){
-try{ 
+
+  
+
+  try{
 let data = await applicationService.createUser(body,company_id);
       
 res.status(201).json({
@@ -69,47 +83,48 @@ res.status(201).json({
     error : err.message,
     message : "Db error in post"
   });
-} 
-}else{
-   return res.json({
-      message : "company id is not exist!"
-     });
-}
+  }
 } // end of function 
-
-
-
-
 
 export const updateUser = async (req,res)=>{
   let body = req.body;
-  let IsCompanyExist = null;
   let company_id = body.company_id;  
   let id = Number(req.params.id);
   let data = null; 
 
   
- const result = validation.applicationSchema.safeParse(body,company_id); 
+ const result = validation.applicationSchema.safeParse(body,company_id);   
+  
+try{
  let isUserExist = await applicationService.IsUserExist(id);
   
   if(isUserExist.rowCount == 0){
     return res.json({
-      message : "application is not exist (updateUser)",
+      message : "application id is not exist (updateUser)"
+  });
+  } 
+}catch(err){
+  return res.json({
+     message : "error at check user exist!",
+    error : err.message
+  });  
+}
+  
+try{
+  let  IsCompanyExist = await applicationService.IscompanyExist(company_id);  
+
+  if(IsCompanyExist.rowCount == 0){
+     return res.json({
+      message : "company id is not exist (updateUser)"
   });
   }
-  
-try{ 
-  IsCompanyExist = await applicationService.IscompanyExist(company_id);
-  }catch(err){
-     return res.json({
-      message : "company id not exist ,please(createUser)",
-       errror : err.message
-  });
+}catch(err){
+return res.json({
+  message : "error at check company_id!",
+  error : err.message
+});
 }
-
-
-  
-if(IsCompanyExist.rowCount!=0 && result.success){
+  if(result.success){
   try{  
  data = await applicationService.updateUsersData(body,company_id,id);
 
@@ -130,13 +145,13 @@ if(data.rowCount == 0){
     errorCode : err.code,
     message : "Db error in put !"
    });
-  } // if block
-}else{
-  return res.json({
-      message : "company id is not exist!"
-     });
-}
-} // end of block update user
+     }  // if block
+    }else{
+     return res.status(404).json({
+            message:"input field is not valid"
+        });
+    }
+  }// end of block update user
 
 export const deleteUser = async (req,res)=>{
   let id = Number(req.params.id);
